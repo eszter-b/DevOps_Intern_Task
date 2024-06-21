@@ -22,6 +22,9 @@ jobs:
         uses: azure/cli@v2
         with:
           azcliversion: 'latest'
+          inlineScript: |
+            az account show
+            az storage -h
           
       - name: Check if resource group exists
         id: check-resource
