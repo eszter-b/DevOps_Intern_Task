@@ -1,0 +1,32 @@
+name: CleanUp VM
+
+on:
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+
+jobs:
+  create-vm:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Azure CLI
+        uses: azure/cli@v2
+
+      - name: Azure Login
+        uses: azure/login@v2
+        with:
+          creds: ${{ secrets.AZURE_CREDENTIALS }}
+
+      - name: Delete VM
+        if: always()
+        run: |
+          az vm delete --resource-group internTaskResourceGroup --name internTaskVM --yes --no-wait || true
+
+      - name: Delete resource group
+        if: always()
+        run: |
+          az group delete --name internTaskResourceGroup --yes --no-wait || true
