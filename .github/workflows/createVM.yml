@@ -60,10 +60,15 @@ jobs:
             --generate-ssh-keys
 
       - name: Wait for 5 min
-        if: env.VM_EXISTS == 'false'
+        if: success()
         run: sleep 300
 
-      - name: Delete resource group
-        if: env.RG_EXISTS == 'false' && env.VM_EXISTS == 'false'
+      - name: Delete VM
+        if: always()
         run: |
-          az group delete --name myResourceGroup --yes --no-wait
+          az vm delete --resource-group internTaskResourceGroup --name internTaskVM --yes --no-wait || true
+
+      - name: Delete resource group
+        if: always()
+        run: |
+          az group delete --name internTaskResourceGroup --yes --no-wait || true
