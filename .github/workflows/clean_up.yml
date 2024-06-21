@@ -7,7 +7,7 @@ on:
   workflow_dispatch:
 
 jobs:
-  create-vm:
+  clean-up-vm:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
