@@ -37,7 +37,7 @@ jobs:
 
       - name: Create resource group
         if: env.RG_EXISTS == 'false'
-        run: az group create --name internTaskResourceGroup --location westeurope
+        run: az group create --name internTaskResourceGroup --location uksouth
 
       - name: Check if VM exists
         id: check_vm_exists
@@ -54,8 +54,8 @@ jobs:
           az vm create \
             --resource-group internTaskResourceGroup \
             --name internTaskVM \
-            --image UbuntuLTS \
-            --size Standard_B1s \
+            --image Ubuntu2204 \
+            --size Standard_B1ls \
             --admin-username azureuser \
             --generate-ssh-keys
 
