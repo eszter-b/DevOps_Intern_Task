@@ -27,19 +27,29 @@ jobs:
             az storage -h
           
       - name: Check if resource group exists
-        id: check-resource
-        run: az group exists --name internTaskResourceGroup
+        id: check_rg_exists
+        run: |
+          if az group show --name internTaskResourceGroup &>/dev/null; then
+            echo "RG_EXISTS=true" >> $GITHUB_ENV
+          else
+            echo "RG_EXISTS=false" >> $GITHUB_ENV
+          fi
 
       - name: Create resource group
-        if: steps.check-resource.outputs.exists == 'false'
+        if: env.RG_EXISTS == 'false'
         run: az group create --name internTaskResourceGroup --location westeurope
 
       - name: Check if VM exists
-        id: check-vm
-        run: az vm show --name internTaskVM --resource-group internTaskResourceGroup
+        id: check_vm_exists
+        run: |
+          if az vm show --resource-group internTaskResourceGroup --name internTaskVM &>/dev/null; then
+            echo "VM_EXISTS=true" >> $GITHUB_ENV
+          else
+            echo "VM_EXISTS=false" >> $GITHUB_ENV
+          fi
 
       - name: Create virtual machine
-        if: steps.check-vm.outcome == 'failure'
+        if: env.VM_EXISTS == 'false'
         run: |
           az vm create \
             --resource-group internTaskResourceGroup \
@@ -50,8 +60,10 @@ jobs:
             --generate-ssh-keys
 
       - name: Wait for 5 min
+        if: env.VM_EXISTS == 'false'
         run: sleep 300
 
       - name: Delete resource group
+        if: env.RG_EXISTS == 'false' && env.VM_EXISTS == 'false'
         run: |
           az group delete --name myResourceGroup --yes --no-wait
