@@ -1,0 +1,52 @@
+name: Create and CleanUp VM
+
+on:
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+
+jobs:
+  create-vm:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Azure CLI
+        uses: azure/cli@v2
+
+      - name: Azure Login
+        uses: azure/login@v2
+        with:
+          creds: ${{ secrets.AZURE_CREDENTIALS }}
+
+      - name: Check if resource group exists
+        id: check-resource
+        run: az group exists --name internTaskResourceGroup
+
+      - name: Create resource group
+        if: steps.check-resource.outputs.exists == 'false'
+        run: az group create --name internTaskResourceGroup --location westeurope
+
+      - name: Check if VM exists
+        id: check-vm
+        run: az vm show --name internTaskVM --resource-group internTaskResourceGroup
+
+      - name: Create virtual machine
+        if: steps.check-vm.outcome == 'failure'
+        run: |
+          az vm create \
+            --resource-group internTaskResourceGroup \
+            --name internTaskVM \
+            --image UbuntuLTS \
+            --size Standard_B1s \
+            --admin-username azureuser \
+            --generate-ssh-keys
+
+      - name: Wait for 5 min
+        run: sleep 300
+
+      - name: Delete resource group
+        run: |
+          az group delete --name myResourceGroup --yes --no-wait
