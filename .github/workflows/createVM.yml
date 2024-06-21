@@ -59,16 +59,12 @@ jobs:
             --admin-username azureuser \
             --generate-ssh-keys
 
-      - name: Wait for 5 min
-        if: success()
-        run: sleep 300
-
       - name: Delete VM
-        if: always()
+        if: env.VM_EXISTS == 'true' && env.RG_EXISTS == 'true'
         run: |
-          az vm delete --resource-group internTaskResourceGroup --name internTaskVM --yes --no-wait || true
+          az vm delete --resource-group internTaskResourceGroup --name internTaskVM --yes --no-wait
 
       - name: Delete resource group
-        if: always()
+        if: env.RG_EXISTS == 'true'
         run: |
-          az group delete --name internTaskResourceGroup --yes --no-wait || true
+          az group delete --name internTaskResourceGroup --yes --no-wait
